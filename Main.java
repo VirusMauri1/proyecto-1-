@@ -17,13 +17,22 @@ public class Main {
             }
 
             try {
-                Expression parsedExpression = Expression.parse(input);
-                Object result = interpreter.evaluate(parsedExpression);
-                if (result != null) {
-                    System.out.println("Resultado: " + result);
+                // Verificar si la expresión es vacía antes de parsear
+                if (input.isEmpty()) {
+                    System.out.println("Error: La expresión no puede estar vacía.");
+                    continue;
                 }
+
+                // Parsear la expresión
+                Expression parsedExpression = Expression.parse(input);
+                System.out.println("Expresión parseada: " + parsedExpression);
+
+                // Evaluar la expresión
+                Object result = interpreter.evaluate(parsedExpression);
+                System.out.println("Resultado: " + result);
+
             } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
+                System.err.println("Error al procesar la expresión: " + e.getMessage());
             }
         }
 
