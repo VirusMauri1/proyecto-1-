@@ -8,8 +8,8 @@ public class Interpreter {
         globalEnv = new Environment();
         setupGlobalEnvironment();
     }
-    
- private void setupGlobalEnvironment() {
+
+    private void setupGlobalEnvironment() {
         globalEnv.define("+", (LispFunction) args -> args.stream().mapToInt(a -> (int) a).sum());
 
         globalEnv.define("-", (LispFunction) args -> {
@@ -29,30 +29,13 @@ public class Interpreter {
             }
             return result;
         });
-     
- globalEnv.define("print", (LispFunction) args -> {
+
+        globalEnv.define("print", (LispFunction) args -> {
             args.forEach(System.out::println);
             return null;
         });
 
-        globalEnv.define("quote", (LispFunction) args -> args.get(0));
-
-        globalEnv.define("setq", (LispFunction) args -> {
-            String varName = (String) args.get(0);
-            Object value = evaluate(args.get(1), globalEnv);
-            globalEnv.define(varName, value);
-            return value;
-        });
-
-     globalEnv.define("defun", (LispFunction) args -> {
-            String name = (String) args.get(0);
-            Expression params = (Expression) args.get(1);
-            Expression body = (Expression) args.get(2);
-            globalEnv.define(name, new Function(params, body, globalEnv));
-            return name;
-        });
-
-       globalEnv.define("cond", (LispFunction) args -> {
+        globalEnv.define("cond", (LispFunction) args -> {
             for (int i = 0; i < args.size(); i += 2) {
                 if ((boolean) evaluate(args.get(i), globalEnv)) {
                     return evaluate(args.get(i + 1), globalEnv);
@@ -61,7 +44,6 @@ public class Interpreter {
             return null;
         });
 
-          // Predicados
         globalEnv.define("atom", (LispFunction) args -> !(args.get(0) instanceof Expression));
 
         globalEnv.define("list", (LispFunction) args -> {
@@ -83,15 +65,50 @@ public class Interpreter {
     public Object evaluate(Object exp, Environment env) {
         if (exp instanceof String) {
             return env.lookup((String) exp);
-        } else if (exp instanceof Expression) {
+        }
+
+        if (exp instanceof Expression) {
             Expression list = (Expression) exp;
+            if (list.size() == 0) {
+                throw new IllegalArgumentException("Error: Se intentó evaluar una lista vacía.");
+            }
+
             Object first = list.get(0);
+
+            // Manejo de expresiones especiales: no evaluar sus argumentos antes
+            if ("quote".equals(first)) {
+                return list.get(1);
+            }
+
+            if ("setq".equals(first)) {
+                String varName = (String) list.get(1);
+                Object value = evaluate(list.get(2), env); // solo evaluamos el valor
+                env.define(varName, value); // definimos la variable
+                return value;
+            }
+
+            if ("defun".equals(first)) {
+                String name = (String) list.get(1);
+                Expression params = (Expression) list.get(2);
+                Expression body = (Expression) list.get(3);
+                Function function = new Function(params, body, env);
+                env.define(name, function);
+                return name;
+            }
+
+            //  Evaluar función normalmente
             Object functionObject = evaluate(first, env);
+
+            if (!(functionObject instanceof LispFunction)) {
+                throw new IllegalArgumentException("Error: '" + first + "' no es una función válida.");
+            }
+
             List<Object> args = list.stream().subList(1, list.size())
                     .stream().map(arg -> evaluate(arg, env)).collect(Collectors.toList());
+
             return ((LispFunction) functionObject).apply(args);
-        } else {
-            return exp;
         }
+
+        return exp;
     }
 }
