@@ -30,3 +30,24 @@ public class Interpreter {
             return result;
         });
      
+ globalEnv.define("print", (LispFunction) args -> {
+            args.forEach(System.out::println);
+            return null;
+        });
+
+        globalEnv.define("quote", (LispFunction) args -> args.get(0));
+
+        globalEnv.define("setq", (LispFunction) args -> {
+            String varName = (String) args.get(0);
+            Object value = evaluate(args.get(1), globalEnv);
+            globalEnv.define(varName, value);
+            return value;
+        });
+
+     globalEnv.define("defun", (LispFunction) args -> {
+            String name = (String) args.get(0);
+            Expression params = (Expression) args.get(1);
+            Expression body = (Expression) args.get(2);
+            globalEnv.define(name, new Function(params, body, globalEnv));
+            return name;
+        });
