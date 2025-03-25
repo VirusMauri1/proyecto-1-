@@ -29,3 +29,22 @@ public class Expression {
         if (input.isEmpty()) {
             throw new IllegalArgumentException("La expresión está vacía.");
         }
+
+        if (input.startsWith("'")) {
+            Expression quoted = new Expression();
+            quoted.add("quote");
+            quoted.add(parse(input.substring(1)));
+            return quoted;
+        }
+
+        if (input.startsWith("(") && input.endsWith(")")) {
+            input = input.substring(1, input.length() - 1).trim();
+            Expression exp = new Expression();
+            int depth = 0;
+            StringBuilder token = new StringBuilder();
+            List<String> tokens = new ArrayList<>();
+
+            for (int i = 0; i < input.length(); i++) {
+                char c = input.charAt(i);
+                if (c == '(') depth++;
+                if (c == ')') depth--;
