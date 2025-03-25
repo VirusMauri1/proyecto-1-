@@ -70,24 +70,18 @@ globalEnv.define("list", (LispFunction) args -> {
     return list;
 });
 
-globalEnv.define("equal", (LispFunction) args -> args.get(0).equals(args.get(1)));
+            //  Manejo de expresiones especiales: no evaluar sus argumentos antes
+            if ("quote".equals(first)) {
+                return list.get(1);
+            }
 
-globalEnv.define("<", (LispFunction) args -> (int) args.get(0) < (int) args.get(1));
-globalEnv.define(">", (LispFunction) args -> (int) args.get(0) > (int) args.get(1));
-}
+            if ("setq".equals(first)) {
+                String varName = (String) list.get(1);
+                Object value = evaluate(list.get(2), env); // solo evaluamos el valor
+                env.define(varName, value); // definimos la variable
+                return value;
+            }
 
-public Object evaluate(Object exp) {
-return evaluate(exp, globalEnv);
-}
-
-public Object evaluate(Object exp, Environment env) {
-if (exp instanceof String) {
-    return env.lookup((String) exp);
-} else if (exp instanceof Expression) {
-    Expression list = (Expression) exp;
-    if (list.size() == 0) {
-        throw new IllegalArgumentException("Error: Se intentó evaluar una lista vacía.");
-    }
             if ("defun".equals(first)) {
                 String name = (String) list.get(1);
                 Expression params = (Expression) list.get(2);
@@ -96,6 +90,7 @@ if (exp instanceof String) {
                 env.define(name, function);
                 return name;
             }
+
             // Evaluar función normalmente
             Object functionObject = evaluate(first, env);
 
