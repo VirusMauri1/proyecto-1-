@@ -12,3 +12,6 @@ public class Environment {
     public Environment(Environment parent) {
         this.parent = parent;
     }
+public void define(String name, Object value) {
+        variables.put(name, value);
+    }
