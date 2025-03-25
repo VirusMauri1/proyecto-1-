@@ -15,3 +15,13 @@ public class Environment {
 public void define(String name, Object value) {
         variables.put(name, value);
     }
+public Object lookup(String name) {
+        if (variables.containsKey(name)) {
+            return variables.get(name);
+        } else if (parent != null) {
+            return parent.lookup(name);
+        } else {
+            throw new RuntimeException("Variable no definida: " + name);
+        }
+    }
+}
