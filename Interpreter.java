@@ -97,7 +97,7 @@ public class Interpreter {
             }
 
             //  Evaluar función normalmente
-            Object functionObject = evaluate(first, env);
+           Object functionObject = evaluate(first, env);
 
             if (!(functionObject instanceof LispFunction)) {
                 throw new IllegalArgumentException("Error: '" + first + "' no es una función válida.");
