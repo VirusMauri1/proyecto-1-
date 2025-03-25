@@ -51,3 +51,13 @@ public class Interpreter {
             globalEnv.define(name, new Function(params, body, globalEnv));
             return name;
         });
+
+       globalEnv.define("cond", (LispFunction) args -> {
+            for (int i = 0; i < args.size(); i += 2) {
+                if ((boolean) evaluate(args.get(i), globalEnv)) {
+                    return evaluate(args.get(i + 1), globalEnv);
+                }
+            }
+            return null;
+        });
+
