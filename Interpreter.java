@@ -61,3 +61,37 @@ public class Interpreter {
             return null;
         });
 
+          // Predicados
+        globalEnv.define("atom", (LispFunction) args -> !(args.get(0) instanceof Expression));
+
+        globalEnv.define("list", (LispFunction) args -> {
+            Expression list = new Expression();
+            args.forEach(list::add);
+            return list;
+        });
+
+        globalEnv.define("equal", (LispFunction) args -> args.get(0).equals(args.get(1)));
+
+        globalEnv.define("<", (LispFunction) args -> (int) args.get(0) < (int) args.get(1));
+        globalEnv.define(">", (LispFunction) args -> (int) args.get(0) > (int) args.get(1));
+    }
+
+    public Object evaluate(Object exp) {
+        return evaluate(exp, globalEnv);
+    }
+
+    public Object evaluate(Object exp, Environment env) {
+        if (exp instanceof String) {
+            return env.lookup((String) exp);
+        } else if (exp instanceof Expression) {
+            Expression list = (Expression) exp;
+            Object first = list.get(0);
+            Object functionObject = evaluate(first, env);
+            List<Object> args = list.stream().subList(1, list.size())
+                    .stream().map(arg -> evaluate(arg, env)).collect(Collectors.toList());
+            return ((LispFunction) functionObject).apply(args);
+        } else {
+            return exp;
+        }
+    }
+}
