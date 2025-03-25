@@ -96,20 +96,19 @@ if (exp instanceof String) {
                 env.define(name, function);
                 return name;
             }
+    Object first = list.get(0);
+    Object functionObject = evaluate(first, env);
 
-            //  Evaluar función normalmente
-           Object functionObject = evaluate(first, env);
+    if (!(functionObject instanceof LispFunction)) {
+        throw new IllegalArgumentException("Error: '" + first + "' no es una función válida.");
+    }
 
-            if (!(functionObject instanceof LispFunction)) {
-                throw new IllegalArgumentException("Error: '" + first + "' no es una función válida.");
-            }
+    List<Object> args = list.stream().subList(1, list.size())
+            .stream().map(arg -> evaluate(arg, env)).collect(Collectors.toList());
 
-            List<Object> args = list.stream().subList(1, list.size())
-                    .stream().map(arg -> evaluate(arg, env)).collect(Collectors.toList());
-
-            return ((LispFunction) functionObject).apply(args);
+    return ((LispFunction) functionObject).apply(args);
+} else {
+    return exp;
         }
-
-        return exp;
     }
 }
