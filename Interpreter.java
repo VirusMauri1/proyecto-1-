@@ -8,6 +8,7 @@ public class Interpreter {
         globalEnv = new Environment();
         setupGlobalEnvironment();
     }
+    
  private void setupGlobalEnvironment() {
         globalEnv.define("+", (LispFunction) args -> args.stream().mapToInt(a -> (int) a).sum());
 
@@ -16,3 +17,16 @@ public class Interpreter {
             for (int i = 1; i < args.size(); i++) result -= (int) args.get(i);
             return result;
         });
+
+        globalEnv.define("*", (LispFunction) args -> args.stream().mapToInt(a -> (int) a).reduce(1, (a, b) -> a * b));
+
+        globalEnv.define("/", (LispFunction) args -> {
+            int result = (int) args.get(0);
+            for (int i = 1; i < args.size(); i++) {
+                int d = (int) args.get(i);
+                if (d == 0) throw new ArithmeticException("División por cero");
+                result /= d;
+            }
+            return result;
+        });
+     
