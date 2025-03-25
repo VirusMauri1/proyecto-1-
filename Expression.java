@@ -48,3 +48,50 @@ public class Expression {
                 char c = input.charAt(i);
                 if (c == '(') depth++;
                 if (c == ')') depth--;
+
+                if (c == ' ' && depth == 0) {
+                    if (token.length() > 0) {
+                        tokens.add(token.toString());
+                        token.setLength(0);
+                    }
+                } else {
+                    token.append(c);
+                }
+            }
+            if (token.length() > 0) {
+                tokens.add(token.toString());
+            }
+
+            for (String t : tokens) {
+                if (t.startsWith("(") && t.endsWith(")")) {
+                    exp.add(parse(t));
+                } else {
+                    exp.add(parseToken(t));
+                }
+            }
+            return exp;
+        } else {
+            Expression single = new Expression();
+            single.add(parseToken(input));
+            return single;
+        }
+    }
+
+    private static Object parseToken(String token) {
+        try {
+            return Integer.parseInt(token);
+        } catch (NumberFormatException e) {
+            return token;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return elements.toString();
+    }
+
+    public static void main(String[] args) {
+        Expression exp = Expression.parse("(+ 2 5)");
+        System.out.println("Expresión parseada: " + exp);
+    }
+}
