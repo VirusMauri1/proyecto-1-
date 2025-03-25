@@ -35,58 +35,59 @@ public class Interpreter {
             return null;
         });
 
-        globalEnv.define("cond", (LispFunction) args -> {
-            for (int i = 0; i < args.size(); i += 2) {
-                if ((boolean) evaluate(args.get(i), globalEnv)) {
-                    return evaluate(args.get(i + 1), globalEnv);
-                }
-            }
-            return null;
+       globalEnv.define("quote", (LispFunction) args -> args.get(0));
+
+        globalEnv.define("setq", (LispFunction) args -> {
+            String varName = (String) args.get(0);
+            Object value = evaluate(args.get(1), globalEnv);
+            globalEnv.define(varName, value);
+            return value;
         });
+        
+        lobalEnv.define("defun", (LispFunction) args -> {
+    String name = (String) args.get(0);
+    Expression params = (Expression) args.get(1);
+    Expression body = (Expression) args.get(2);
+    Function function = new Function(params, body, globalEnv);
+    globalEnv.define(name, function);
+    return name;
+});
 
-        globalEnv.define("atom", (LispFunction) args -> !(args.get(0) instanceof Expression));
-
-        globalEnv.define("list", (LispFunction) args -> {
-            Expression list = new Expression();
-            args.forEach(list::add);
-            return list;
-        });
-
-        globalEnv.define("equal", (LispFunction) args -> args.get(0).equals(args.get(1)));
-
-        globalEnv.define("<", (LispFunction) args -> (int) args.get(0) < (int) args.get(1));
-        globalEnv.define(">", (LispFunction) args -> (int) args.get(0) > (int) args.get(1));
-    }
-
-    public Object evaluate(Object exp) {
-        return evaluate(exp, globalEnv);
-    }
-
-    public Object evaluate(Object exp, Environment env) {
-        if (exp instanceof String) {
-            return env.lookup((String) exp);
+globalEnv.define("cond", (LispFunction) args -> {
+    for (int i = 0; i < args.size(); i += 2) {
+        if ((boolean) evaluate(args.get(i), globalEnv)) {
+            return evaluate(args.get(i + 1), globalEnv);
         }
+    }
+    return null;
+});
 
-        if (exp instanceof Expression) {
-            Expression list = (Expression) exp;
-            if (list.size() == 0) {
-                throw new IllegalArgumentException("Error: Se intentó evaluar una lista vacía.");
-            }
+globalEnv.define("atom", (LispFunction) args -> !(args.get(0) instanceof Expression));
 
-            Object first = list.get(0);
+globalEnv.define("list", (LispFunction) args -> {
+    Expression list = new Expression();
+    args.forEach(list::add);
+    return list;
+});
 
-            // Manejo de expresiones especiales: no evaluar sus argumentos antes
-            if ("quote".equals(first)) {
-                return list.get(1);
-            }
+globalEnv.define("equal", (LispFunction) args -> args.get(0).equals(args.get(1)));
 
-            if ("setq".equals(first)) {
-                String varName = (String) list.get(1);
-                Object value = evaluate(list.get(2), env); // solo evaluamos el valor
-                env.define(varName, value); // definimos la variable
-                return value;
-            }
+globalEnv.define("<", (LispFunction) args -> (int) args.get(0) < (int) args.get(1));
+globalEnv.define(">", (LispFunction) args -> (int) args.get(0) > (int) args.get(1));
+}
 
+public Object evaluate(Object exp) {
+return evaluate(exp, globalEnv);
+}
+
+public Object evaluate(Object exp, Environment env) {
+if (exp instanceof String) {
+    return env.lookup((String) exp);
+} else if (exp instanceof Expression) {
+    Expression list = (Expression) exp;
+    if (list.size() == 0) {
+        throw new IllegalArgumentException("Error: Se intentó evaluar una lista vacía.");
+    }
             if ("defun".equals(first)) {
                 String name = (String) list.get(1);
                 Expression params = (Expression) list.get(2);
